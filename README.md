@@ -1,6 +1,8 @@
 # Tune Tutotor
 
-Generate educational jungles using Suno
+Generate educational jungles using Suno.
+
+Hacked on [Sundai](https://sundai.club), Nov 3, 2024.
 
 # Installation
 
