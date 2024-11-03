@@ -40,9 +40,12 @@ html_content = """
         <h1>Music Generation Form</h1>
         <form action="/form-results" method="post">
             <label for="query">Query:</label><br>
-            <input type="text" id="query" name="query"><br>
-            <label for="version">Version:</label><br>
-            <input type="number" id="version" name="version"><br>
+            <textarea cols=50 rows=3 id="query" name="query"></textarea><br><br>
+            <label for="version">Version:</label>
+            <select id="version" name="version">
+                <option value="1">1 (Kris)</option>
+                <option value="2">2 (Chloe)</option>
+            </select><br><br>
             <input type="submit" value="Generate Music">
         </form>
     </body>
