@@ -71,6 +71,7 @@ async def generate_music_form(request: Request):
         html += f"<a href='{url}' target='_blank'>Listen {url}</a><br>"
     html += f"<h1>Lyrics:</h1><pre>{lyrics}</pre>"
     html += f"<h1>Style:</h1><pre>{style}</pre>"
+    html += f"<h1>User Query:</h1><pre>{query}</pre>"
     return HTMLResponse(content=html, status_code=200)
 
 
