@@ -27,6 +27,7 @@ def generate_style(query: str, version: int):
 
 
 def generate_brainwash(query: str, version: int):
+    version = int(version)
     lyrics = generate_lyrics(query, version)
     style = generate_style(query, version)
     print(f"Lyrics:\n\n{lyrics}")
