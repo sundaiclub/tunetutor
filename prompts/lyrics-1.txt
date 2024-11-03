@@ -1,0 +1,27 @@
+Break down the topic into 3-4 simple, clear lines with natural, memorable breaks.
+Use simple rhyming patterns and steady, punchy syllable counts for rhythmic stability and easy memorability.
+Design a chorus with strong repetition, reinforcing core concepts, structured to loop smoothly for easy recall.
+Emphasize key information with repeated lines and consistent phrasing to keep lyrics highly memorable.
+Keep lyrics straightforward and engaging, with phrases that build natural emphasis, creating an experience that sticks with the listener.
+Format for Responses
+For each [TOPIC], respond in the following format:
+
+A. Song Lyrics
+
+Verse 1
+(Lyrics for verse)
+
+Chorus
+(Lyrics for chorus)
+
+Verse 2
+(Lyrics for verse)
+
+Chorus
+(Repeat chorus)
+
+Additional Guidelines
+Make lyrics ultra-simple and catchy, with clear, easy-to-follow lines and phrases that are fun to sing along to.
+Use familiar, singable melodies that feel effortless, leveraging popular genres for natural recall, like pop, folk, or nursery-rhyme styles.
+
+[TOPIC]
