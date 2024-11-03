@@ -1,6 +1,6 @@
 import uvicorn
 from fastapi import FastAPI, Request
-from fastapi.responses import HTMLResponse
+from fastapi.responses import HTMLResponse, JSONResponse
 from pathlib import Path
 from suno_api import generate_tunes
 from langchain_openai import ChatOpenAI
@@ -77,10 +77,12 @@ async def generate_music_form(request: Request):
     return HTMLResponse(content=html, status_code=200)
 
 
-@app.post("/api/generate")
-async def generate_music_api(query: str, version: int):
+@app.post("/api/generate", response_class=JSONResponse)
+async def generate_music_api(request: Request, input: dict):
+    query = input.get("query")
+    version = input.get("version")
     lyrics, style, urls = generate_brainwash(query, version)
-    return {"lyrics": lyrics, "style": style, "urls": urls}
+    return JSONResponse(content={"lyrics": lyrics, "style": style, "urls": urls})
 
 
 if __name__ == "__main__":
