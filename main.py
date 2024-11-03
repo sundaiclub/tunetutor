@@ -32,7 +32,7 @@ def generate_brainwash(query: str, version: int):
     style = generate_style(query, version)
     print(f"Lyrics:\n\n{lyrics}")
     print(f"Style:\n\n{style}")
-    urls = generate_tunes(lyrics, style)
+    urls = generate_tunes(lyrics, style, query)
     print(f"URLS:\n\n{urls}")
     return lyrics, style, urls
 

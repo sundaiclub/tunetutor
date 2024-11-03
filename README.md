@@ -1,4 +1,4 @@
-# Tune Tutotor
+# Tune Tutor
 
 Generate educational jungles using Suno.
 

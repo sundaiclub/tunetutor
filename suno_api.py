@@ -57,11 +57,12 @@ def generate_whole_song(clip_id):
     return response.json()
 
 
-def generate_tunes(lyrics, style):
+def generate_tunes(lyrics, tags, title):
     data = custom_generate_audio(
         {
             "prompt": lyrics,
-            "tags": style,
+            "tags": tags,
+            "title": title,
             "make_instrumental": False,
             "wait_audio": False,
         }
