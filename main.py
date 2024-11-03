@@ -7,7 +7,7 @@ from langchain_openai import ChatOpenAI
 
 app = FastAPI()
 
-llm = ChatOpenAI()
+llm = ChatOpenAI(model="gpt-4o")
 
 
 def generate_lyrics(query: str, version: int):
@@ -19,6 +19,8 @@ def generate_lyrics(query: str, version: int):
 
 def generate_style(query: str, version: int):
     prompt = Path(f"prompts/style-{version}.txt").read_text()
+    if version == 2:
+        return prompt  # fixed, no AI
     prompt += "\n\n" + query
     response = llm.invoke(prompt).content
     return response
@@ -31,7 +33,7 @@ def generate_brainwash(query: str, version: int):
     print(f"Style:\n\n{style}")
     urls = generate_tunes(lyrics, style)
     print(f"URLS:\n\n{urls}")
-    return urls
+    return lyrics, style, urls
 
 
 html_content = """
@@ -63,17 +65,19 @@ async def generate_music_form(request: Request):
     form_data = await request.form()
     query = form_data.get("query")
     version = form_data.get("version")
-    urls = generate_brainwash(query, version)
-    html_links = ""
+    lyrics, style, urls = generate_brainwash(query, version)
+    html = "<h1>Music Generation Results:</h1>"
     for url in urls:
-        html_links += f"<a href='{url}' target='_blank'>Listen {url}</a><br>"
-    return HTMLResponse(content=html_links, status_code=200)
+        html += f"<a href='{url}' target='_blank'>Listen {url}</a><br>"
+    html += f"<h1>Lyrics:</h1><pre>{lyrics}</pre>"
+    html += f"<h1>Style:</h1><pre>{style}</pre>"
+    return HTMLResponse(content=html, status_code=200)
 
 
 @app.post("/api/generate")
 async def generate_music_api(query: str, version: int):
-    urls = generate_brainwash(query, version)
-    return {"urls": urls}
+    lyrics, style, urls = generate_brainwash(query, version)
+    return {"lyrics": lyrics, "style": style, "urls": urls}
 
 
 if __name__ == "__main__":

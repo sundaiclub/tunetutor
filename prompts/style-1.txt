@@ -6,8 +6,6 @@ Provide a simple description (120 characters max) of a well-known music style wi
 Format for Responses
 For each [TOPIC], respond in the following format:
 
-B. Style of Music Description
-
 A short description of the music style, genre, pace, and feel (120 characters max).
 
 Additional Guidelines

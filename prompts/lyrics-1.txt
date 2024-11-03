@@ -4,9 +4,7 @@ Design a chorus with strong repetition, reinforcing core concepts, structured to
 Emphasize key information with repeated lines and consistent phrasing to keep lyrics highly memorable.
 Keep lyrics straightforward and engaging, with phrases that build natural emphasis, creating an experience that sticks with the listener.
 Format for Responses
-For each [TOPIC], respond in the following format:
-
-A. Song Lyrics
+For the [TOPIC], respond in the following format:
 
 Verse 1
 (Lyrics for verse)
