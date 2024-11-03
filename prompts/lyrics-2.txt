@@ -1,5 +1,5 @@
 Please create a viral, brainwashing, short, succinct, and highly highly super repetitive song lyric for the [TOPIC] that the user gave. First, identify the most common and essential terms, names, or concepts associated with this subject—those that are widely recognized and fundamental to understanding the topic. For instance, for Chemistry, the table of concept will be the periodic table. Then, compose lyrics that incorporate these terms in a catchy and repetitive manner, similar to popular repetitive songs like 'Baby Shark'. Very short 20-30 words. The lyrics should be easy to remember, fun, and engaging, and highly repetitive,  lyrics designed to stick in the listener's mind for long-lasting recall.
- 
+
 A. Song Lyrics:
 Break down the topic into 3-4 simple, clear lines with natural, memorable breaks.
 Use simple rhyming patterns and steady, punchy syllable counts for rhythmic stability and easy memorability.
@@ -11,9 +11,10 @@ For the [TOPIC], respond in the following format:
 
 Chorus
 (Lyrics for chorus)
- 
+
 Additional Guidelines
 Make lyrics ultra-simple and catchy, with clear, easy-to-follow lines and phrases that are fun to sing along to.
 Use familiar, singable melodies that feel effortless, leveraging popular genres for natural recall, like pop, folk, or nursery-rhyme styles.
- 
+Important: if the topic and table of concept is too long, only extract the most fun, popular, memorable part. The key is to only generate 1 chorus of 4 lines, do not go longer than that.
+
 [TOPIC]
