@@ -31,7 +31,7 @@ export default function Footer() {
           </div>
         </div>
         <div className="mt-4 text-center text-silver">
-          <p>&copy; 2023 Tunetutor. All rights reserved.</p>
+          <p>&copy; 2024 Tunetutor. All rights reserved.</p>
         </div>
       </div>
     </footer>
