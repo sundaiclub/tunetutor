@@ -5,3 +5,6 @@ requests
 fastapi
 uvicorn
 python-multipart
+yt-dlp
+ffmpeg-python
+ffmpeg
