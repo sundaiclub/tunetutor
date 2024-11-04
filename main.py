@@ -53,6 +53,7 @@ html_content = """
             <select id="version" name="version">
                 <option value="1">1 (Kris)</option>
                 <option value="2">2 (Chloe)</option>
+                <option value="3">3 (Brand/Product)</option>
             </select><br><br>
             <input type="submit" value="Generate Music">
         </form>
