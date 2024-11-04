@@ -60,19 +60,21 @@ def generate_whole_song(clip_id):
 def generate_tunes(lyrics, tags, title):
     data = custom_generate_audio(
         {
-            "prompt": lyrics,
-            "tags": tags,
-            "title": title,
+            "prompt": lyrics[:3000],
+            "tags": tags[:120],
+            "title": title[:80],
             "make_instrumental": False,
             "wait_audio": False,
         }
     )
+    print(data)
 
     ids = f"{data[0]['id']},{data[1]['id']}"
     print(f"ids: {ids}")
 
     for _ in range(60):
         data = get_audio_information(ids)
+        print(data)
         if data[0]["status"] == "streaming":
             print(f"{data[0]['id']} ==> {data[0]['audio_url']}")
             print(f"{data[1]['id']} ==> {data[1]['audio_url']}")
