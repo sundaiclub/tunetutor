@@ -123,15 +123,18 @@ async def videofy(request: Request, suno_id: str, youtube_id: str = None):
         youtube_id = random.choice(youtube_ids)
     video_filename = f"static/youtube/youtube-{youtube_id}.mp4"
     if not os.path.exists(video_filename):
-        cookiefile = "/etc/secrets/youtube_cookies.txt"
-        # if not os.path.exists(cookiefile) and os.environ.get("YOUTUBE_COOKIE"):
-        #     with open(cookiefile, "w") as file:
-        #         file.write(os.environ.get("YOUTUBE_COOKIE"))
         ydl_opts = {
             "format": "bestvideo",
             "outtmpl": video_filename,
-            "cookiefile": cookiefile,
         }
+        cookiefile_ro = (
+            "/etc/secrets/youtube_cookies.txt"  # Render secret file, read-only
+        )
+        if os.path.exists(cookiefile_ro):
+            cookiefile_rw = "youtube_cookies.txt"
+            with open(cookiefile_ro, "r") as src, open(cookiefile_rw, "w") as dst:
+                dst.write(src.read())
+            ydl_opts["cookiefile"] = cookiefile_rw
 
         with YoutubeDL(ydl_opts) as ydl:
             urls = f"https://www.youtube.com/watch?v={youtube_id}"
