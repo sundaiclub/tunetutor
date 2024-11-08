@@ -20,7 +20,17 @@ pip install -r requirements.txt
 python main.py
 ```
 
+To expose your localhost to the world:
+
+```
+npm install -g localtunnel
+lt --port 8000
+```
+
+Then open the webpage and enter the password. The password is your machine IP4 or IP6 address.
+
 ## On Render
 ```bash
 uvicorn main:app --host 0.0.0.0 --port 80 --workers 4
 ```
+
