@@ -75,9 +75,9 @@ async def generate_music_form(request: Request):
     lyrics, style, audios = generate_brainwash(query, version)
     html = "<h1>Music Generation Results:</h1>"
     for audio in audios:
-        url = audio["url"]
-        idd = audio["id"]
-        html += f"<a href='{url}' target='_blank'>Listen</a>, <a href='/videofy/{idd}/NO' target='_blank'>Videofy</a>, ID: {idd}<br>"
+        audio_url = audio["url"]
+        suno_id = audio["id"]
+        html += f"<a href='{audio_url}' target='_blank'>Listen</a> | <a href='/api/video?suno_id={suno_id}' target='_blank'>Watch</a> | ID: {suno_id}<br>"
     html += f"<h1>Lyrics:</h1><pre>{lyrics}</pre>"
     html += f"<h1>Style:</h1><pre>{style}</pre>"
     html += f"<h1>User Query:</h1><pre>{query}</pre>"
@@ -100,96 +100,44 @@ async def generate_music_api(request: Request, input: dict):
     )
 
 
-VIDEO_URLS = """
-iFiPxTrcoWw
-wv8_ePzdMv8
-qK1VjY_cU9w
-13_4cPyWiIo
-dBE0pZtK3ao
-GA8vYmmvqEk
-oPz7Uh_6ey4
-r5utBFtLtWk
-3j5PUUQz5cw
-Pap_Ln-Fz2A
-0ikEJppc9qQ
-FHkeRqGnNQk
-A2RQGBQvHfI
-IWy5lAkt6CY
-CCfNnjiN8xI
-iUEccNy3m04
-l0aysU5iE5k
-wrSXoFBozu4
-ckKNrq56XIw
--IegPHSc2VA
-o9b2oynTQXo
-X_79-x_nLzs
-1e6Rn6JEICc
-StgZ5ct4Jx4
-QZQPRIg245A
-vC04Xj7NWBc
-Pp7fmvfyaOI
-YB10EbfzZts
-mvNSGMcTN1s
-pSgWt_CFtHM
-i5w6Y74ZgYk
-FXzWKqMPHI0
-prmMgmdM-xc
-xKRNDalWE-E
-rsEP9N9c5CQ
-bb07ui130-8
-7cIPxrLYw8M
---owd7CIjYs
-axAYvo8gOIA
-B2GM98bKhVg
-E1CgDCh5KC0
-BbM2MJ6aeZE
-rYPeM4m-tJc
-oSzKvHzjrSA
-YpjTpjFuhZM
-wXN08vl6TWI
-AGnZ8nMnbv4
-lzEEhDRRafM
-Ctdg-sOW8po
-6GPXGBg7UGo
-4ASNL5RwghA
-lVtPEAeM-UM
-cOUcu-xSKHM""".strip().splitlines()
-
-
-@app.get("/videofy/{suno_id}/{yt_id}")
-async def videofy(suno_id: str, yt_id: str = None):
-    if yt_id == "NO":
-        yt_id = random.choice(VIDEO_URLS)
-    os.makedirs("files", exist_ok=True)
-    print(suno_id, yt_id)
-    audio_url = None
+def get_audio_url(suno_id: str) -> str:
     for _ in range(60):
         data = get_audio_information(suno_id)
         if data[0]["status"] in ["streaming", "complete"]:
             print(f"{data[0]['id']} ==> {data[0]['audio_url']}")
-            audio_url = data[0]["audio_url"]
-            break
+            return data[0]["audio_url"]
         # sleep 5s
         time.sleep(5)
+    return None
 
+
+@app.get("/api/video")
+async def videofy(suno_id: str, youtube_id: str = None):
+    print(suno_id, youtube_id)
+    os.makedirs("files", exist_ok=True)
+
+    audio_url = get_audio_url(suno_id)
     response = requests.get(audio_url)
     audio_filename = f"files/suno-{suno_id}.mp3"
     if response.status_code == 200:
         with open(audio_filename, "wb") as file:
             file.write(response.content)
 
-    video_filename = f"files/{yt_id}.mp4"
+    if not youtube_id:
+        youtube_ids = open("youtube_ids.txt").read().strip().splitlines()
+        youtube_id = random.choice(youtube_ids)
+    video_filename = f"files/youtube-{youtube_id}.mp4"
     ydl_opts = {
         "format": "bestvideo",
         "outtmpl": video_filename,
     }
 
     with YoutubeDL(ydl_opts) as ydl:
-        urls = f"https://www.youtube.com/watch?v={yt_id}"
+        urls = f"https://www.youtube.com/watch?v={youtube_id}"
         ydl.download(urls)
 
-    output_filename = f"files/merged-{suno_id}.mp4"
-    download_filename = f"tune-tutor-{suno_id}.mp4"
+    download_filename = f"tutu_{suno_id}_{youtube_id}.mp4"
+    output_filename = f"files/{download_filename}"
     merge_command = f'ffmpeg -y -i "{video_filename}" -stream_loop -1 -i "{audio_filename}" -map 0:v -map 1:a -c:v copy -shortest {output_filename}'
     print(merge_command)
     os.system(merge_command)
