@@ -4,7 +4,11 @@ import requests
 import time
 import uvicorn
 from fastapi import FastAPI, Request
-from fastapi.responses import HTMLResponse, JSONResponse, FileResponse
+from fastapi.responses import (
+    HTMLResponse,
+    JSONResponse,
+)
+from fastapi.staticfiles import StaticFiles
 from pathlib import Path
 from suno_api import generate_tunes, get_audio_information
 from langchain_openai import ChatOpenAI
@@ -13,6 +17,8 @@ from yt_dlp import YoutubeDL
 app = FastAPI()
 
 llm = ChatOpenAI(model="gpt-4o")
+
+app.mount("/static", StaticFiles(directory="static"), name="static")
 
 
 def generate_lyrics(query: str, version: int):
@@ -43,22 +49,23 @@ def generate_brainwash(query: str, version: int):
 
 
 @app.get("/")
-async def get_form():
+async def index_form():
     html_content = open("index.html").read()
     return HTMLResponse(content=html_content, status_code=200)
 
 
 @app.post("/form-results")
-async def generate_music_form(request: Request):
+async def index_form_results(request: Request):
     form_data = await request.form()
     query = form_data.get("query")
     version = form_data.get("version")
     lyrics, style, audios = generate_brainwash(query, version)
     html = "<h1>Music Generation Results:</h1>"
+    html += "<ol>"
     for audio in audios:
         audio_url = audio["url"]
         suno_id = audio["id"]
-        html += f"<a href='{audio_url}' target='_blank'>Listen</a> | <a href='/api/video?suno_id={suno_id}' target='_blank'>Watch</a> | ID: {suno_id}<br>"
+        html += f"<li>Listen: <audio src='{audio_url}' style='vertical-align: middle;' controls></audio><br>Watch: <a href='/api/video?suno_id={suno_id}' target='_blank'>API</a><br>Suno ID: {suno_id}<br>"
     html += f"<h1>Lyrics:</h1><pre>{lyrics}</pre>"
     html += f"<h1>Style:</h1><pre>{style}</pre>"
     html += f"<h1>User Query:</h1><pre>{query}</pre>"
@@ -93,13 +100,15 @@ def get_audio_url(suno_id: str) -> str:
 
 
 @app.get("/api/video")
-async def videofy(suno_id: str, youtube_id: str = None):
+async def videofy(request: Request, suno_id: str, youtube_id: str = None):
     print(suno_id, youtube_id)
-    os.makedirs("files", exist_ok=True)
+    os.makedirs("static/suno", exist_ok=True)
+    os.makedirs("static/youtube", exist_ok=True)
+    os.makedirs("static/output", exist_ok=True)
 
     audio_url = get_audio_url(suno_id)
     response = requests.get(audio_url)
-    audio_filename = f"files/suno-{suno_id}.mp3"
+    audio_filename = f"static/suno/suno-{suno_id}.mp3"
     if response.status_code == 200:
         with open(audio_filename, "wb") as file:
             file.write(response.content)
@@ -107,7 +116,7 @@ async def videofy(suno_id: str, youtube_id: str = None):
     if not youtube_id:
         youtube_ids = open("youtube_ids.txt").read().strip().splitlines()
         youtube_id = random.choice(youtube_ids)
-    video_filename = f"files/youtube-{youtube_id}.mp4"
+    video_filename = f"static/youtube/youtube-{youtube_id}.mp4"
     ydl_opts = {
         "format": "bestvideo",
         "outtmpl": video_filename,
@@ -117,15 +126,15 @@ async def videofy(suno_id: str, youtube_id: str = None):
         urls = f"https://www.youtube.com/watch?v={youtube_id}"
         ydl.download(urls)
 
-    download_filename = f"tutu_{suno_id}_{youtube_id}.mp4"
-    output_filename = f"files/{download_filename}"
+    download_filename = f"tutu-{suno_id}-{youtube_id}.mp4"
+    output_filename = f"static/output/{download_filename}"
     merge_command = f'ffmpeg -y -i "{video_filename}" -stream_loop -1 -i "{audio_filename}" -map 0:v -map 1:a -c:v copy -shortest {output_filename}'
     print(merge_command)
     os.system(merge_command)
 
-    return FileResponse(
-        output_filename, media_type="video/mp4", filename=download_filename
-    )
+    hostname = request.headers.get("host", "localhost:8000")
+    scheme = request.headers.get("x-forwarded-proto", "http")
+    return JSONResponse(content={"url": f"{scheme}://{hostname}/{output_filename}"})
 
 
 if __name__ == "__main__":
