@@ -1,6 +1,8 @@
 tmp
 .DS_Store
-static/
+static/output
+static/suno
+static/youtube
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
