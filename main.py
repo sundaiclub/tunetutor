@@ -18,6 +18,7 @@ app = FastAPI()
 
 llm = ChatOpenAI(model="gpt-4o")
 
+os.makedirs("static", exist_ok=True)
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
 
