@@ -9,10 +9,13 @@ from fastapi.responses import (
     JSONResponse,
 )
 from fastapi.staticfiles import StaticFiles
+from dotenv import load_dotenv
 from pathlib import Path
 from suno_api import generate_tunes, get_audio_information
 from langchain_openai import ChatOpenAI
 from yt_dlp import YoutubeDL
+
+load_dotenv()
 
 app = FastAPI()
 
@@ -107,25 +110,32 @@ async def videofy(request: Request, suno_id: str, youtube_id: str = None):
     os.makedirs("static/youtube", exist_ok=True)
     os.makedirs("static/output", exist_ok=True)
 
-    audio_url = get_audio_url(suno_id)
-    response = requests.get(audio_url)
     audio_filename = f"static/suno/suno-{suno_id}.mp3"
-    if response.status_code == 200:
-        with open(audio_filename, "wb") as file:
-            file.write(response.content)
+    if not os.path.exists(audio_filename):
+        audio_url = get_audio_url(suno_id)
+        response = requests.get(audio_url)
+        if response.status_code == 200:
+            with open(audio_filename, "wb") as file:
+                file.write(response.content)
 
     if not youtube_id:
         youtube_ids = open("youtube_ids.txt").read().strip().splitlines()
         youtube_id = random.choice(youtube_ids)
     video_filename = f"static/youtube/youtube-{youtube_id}.mp4"
-    ydl_opts = {
-        "format": "bestvideo",
-        "outtmpl": video_filename,
-    }
+    if not os.path.exists(video_filename):
+        cookiefile = "youtube_cookie.txt"
+        if not os.path.exists(cookiefile) and os.environ.get("YOUTUBE_COOKIE"):
+            with open(cookiefile, "w") as file:
+                file.write(os.environ.get("YOUTUBE_COOKIE"))
+        ydl_opts = {
+            "format": "bestvideo",
+            "outtmpl": video_filename,
+            "cookiefile": cookiefile,
+        }
 
-    with YoutubeDL(ydl_opts) as ydl:
-        urls = f"https://www.youtube.com/watch?v={youtube_id}"
-        ydl.download(urls)
+        with YoutubeDL(ydl_opts) as ydl:
+            urls = f"https://www.youtube.com/watch?v={youtube_id}"
+            ydl.download(urls)
 
     download_filename = f"tutu-{suno_id}-{youtube_id}.mp4"
     output_filename = f"static/output/{download_filename}"
