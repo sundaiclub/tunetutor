@@ -42,28 +42,9 @@ def generate_brainwash(query: str, version: int):
     return lyrics, style, audios
 
 
-html_content = """
-<html>
-    <body>
-        <h1>Music Generation Form</h1>
-        <form action="/form-results" method="post">
-            <label for="query">Query:</label><br>
-            <textarea cols=50 rows=3 id="query" name="query"></textarea><br><br>
-            <label for="version">Version:</label>
-            <select id="version" name="version">
-                <option value="1">1 (Kris)</option>
-                <option value="2">2 (Chloe)</option>
-                <option value="3">3 (Brand/Product)</option>
-            </select><br><br>
-            <input type="submit" value="Generate Music">
-        </form>
-    </body>
-</html>
-"""
-
-
 @app.get("/")
 async def get_form():
+    html_content = open("index.html").read()
     return HTMLResponse(content=html_content, status_code=200)
 
 
