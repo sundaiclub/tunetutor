@@ -20,7 +20,7 @@ def download_audio(url, filename="audio_file.mp3"):
 # URL of the audio file
 url = "https://audiopipe.suno.ai/?item_id=d8e35699-df92-4b0c-967b-92752c0993dd"
 
-#audio_file = download_audio(url)
+audio_file = download_audio(url)
 
 def timestamp_audio(audio_file_path):
     try:
