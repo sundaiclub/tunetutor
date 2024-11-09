@@ -14,13 +14,13 @@ Memorable Hooks: Include a distinctive hook or tagline that listeners will assoc
 Avoid Clichés: Steer clear of overused phrases to maintain originality and impact.
 Format:
 
-Provide the jingle lyrics in a simple and engaging structure, ensuring the total length does not exceed 6 lines.
+Provide the jingle lyrics in a simple and engaging structure without numbering the lines, ensuring the total length does not exceed 6 lines.
 
 Example:
 
-Line 1: Sip the sunshine, taste the breeze,
-Line 2: With [Brand Name], life's a squeeze.
-Line 3: Freshness bottled, just for you,
-Line 4: [Brand Name]—pure joy, brand new.
+Sip the sunshine, taste the breeze,
+With [Brand Name], life's a squeeze.
+Freshness bottled, just for you,
+[Brand Name]—pure joy, brand new.
 
 [BRAND/PRODUCT]
