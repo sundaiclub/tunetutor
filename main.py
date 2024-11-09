@@ -124,7 +124,7 @@ async def videofy(request: Request, suno_id: str, youtube_id: str = None):
     video_filename = f"static/youtube/youtube-{youtube_id}.mp4"
     if not os.path.exists(video_filename):
         ydl_opts = {
-            "format": "bestvideo",
+            "format": "bestvideo[ext=mp4]",
             "outtmpl": video_filename,
         }
         cookiefile_ro = (
