@@ -129,7 +129,7 @@ def get_audio_duration(audio_file_path: str) -> float:
 
 def repeat_subtitles(subtitles: str, audio_duration: float, times: int) -> str:
     repeated_subtitles = ""
-    for i in range(10):
+    for i in range(times):
         # For each line in subtitles, shift timestamps by i * audio_duration
         shifted = ""
         for line in subtitles.split("\n"):
@@ -180,7 +180,7 @@ async def videofy(request: Request, suno_id: str, youtube_id: str = None):
             subtitles = subtitle_audio(audio_filename)
             audio_duration = get_audio_duration(audio_filename)
             print(f"Audio duration: {audio_duration} seconds")
-            repeated_subtitles = repeat_subtitles(subtitles, audio_duration, 10)
+            repeated_subtitles = repeat_subtitles(subtitles, audio_duration, 50)
             file.write(repeated_subtitles)
     has_subtitles = (
         os.path.exists(subtitle_filename) and os.path.getsize(subtitle_filename) > 0
