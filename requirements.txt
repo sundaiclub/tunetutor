@@ -8,3 +8,4 @@ python-multipart
 yt-dlp
 ffmpeg-python
 ffmpeg
+openai-whisper
