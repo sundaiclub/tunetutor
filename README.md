@@ -34,3 +34,9 @@ Then open the webpage and enter the password. The password is your machine IP4 o
 uvicorn main:app --host 0.0.0.0 --port 80 --workers 4
 ```
 
+## Docker
+```bash
+docker build -t vyahhi/sundai-tutu .
+docker image ls
+docker push vyahhi/sundai-tutu
+```
