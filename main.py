@@ -93,6 +93,20 @@ async def generate_music_api(request: Request, input: dict):
     )
 
 
+@app.post("/api/generate-video", response_class=JSONResponse)
+async def generate_video_api(request: Request, input: dict):
+    youtube_id = input.get("youtube_id")
+
+    # First generate the music by reusing generate_music_api
+    music_response = await generate_music_api(request, input)
+    # audio1_suno_id = music_response.body["ids"][0]
+    audio2_suno_id = music_response.body["ids"][0]
+
+    # Then create videos for each generated audio
+    video_response = await videofy(request, audio2_suno_id, youtube_id)
+    return video_response
+
+
 def get_audio_url(suno_id: str) -> str:
     for _ in range(60):
         data = get_audio_information(suno_id)
@@ -210,7 +224,7 @@ async def videofy(request: Request, suno_id: str, youtube_id: str = None):
 
     download_filename = f"tutu-{suno_id}-{youtube_id}.mp4"
     output_filename = f"static/output/{download_filename}"
-    merge_command = f'ffmpeg -y -i "{video_filename}" -stream_loop -1 -i "{audio_filename}" -map 0:v -map 1:a -c:v copy -shortest {output_filename}'
+    merge_command = f'ffmpeg -y -i "{video_filename}" -stream_loop -1 -i "{audio_filename}" -map 0:v -map 1:a -c:v copy -t $(ffprobe -i "{audio_filename}" -show_entries format=duration -v quiet -of csv="p=0") {output_filename}'
     print(merge_command)
     os.system(merge_command)
     output_filename_hardsub = f"static/output-hardsub/{download_filename}"
@@ -220,7 +234,7 @@ async def videofy(request: Request, suno_id: str, youtube_id: str = None):
         # TODO: combine it with merge command maybe
         # see https://superuser.com/a/869473 & https://stackoverflow.com/a/25880038 :
         # -vf "subtitles=subs.srt:force_style='Fontsize=24,PrimaryColour=&H0000ff&,OutlineColour=&H80000000'"
-        subtitle_command = f"""ffmpeg -y -i "{output_filename}" -vf "subtitles={subtitle_filename}:force_style='Fontsize=14,OutlineColour=&H80000000,BorderStyle=3,Outline=1,Shadow=0,MarginV=20'" {output_filename_hardsub}"""
+        subtitle_command = f"""ffmpeg -y -hwaccel auto -i "{output_filename}" -vf "subtitles={subtitle_filename}:force_style='Fontsize=14,OutlineColour=&H80000000,BorderStyle=3,Outline=1,Shadow=0,MarginV=20'" -c:v libx264 -preset fast -crf 23 -c:a copy {output_filename_hardsub}"""
         print(subtitle_command)
         os.system(subtitle_command)
 
