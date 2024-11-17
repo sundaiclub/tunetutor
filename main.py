@@ -220,7 +220,7 @@ async def videofy(request: Request, suno_id: str, youtube_id: str = None):
         # TODO: combine it with merge command maybe
         # see https://superuser.com/a/869473 & https://stackoverflow.com/a/25880038 :
         # -vf "subtitles=subs.srt:force_style='Fontsize=24,PrimaryColour=&H0000ff&,OutlineColour=&H80000000'"
-        subtitle_command = f"""ffmpeg -y -i "{output_filename}" -vf "subtitles={subtitle_filename}:force_style='Fontsize=24,OutlineColour=&H80000000,BorderStyle=3,Outline=1,Shadow=0,MarginV=20'" {output_filename_hardsub}"""
+        subtitle_command = f"""ffmpeg -y -i "{output_filename}" -vf "subtitles={subtitle_filename}:force_style='Fontsize=14,OutlineColour=&H80000000,BorderStyle=3,Outline=1,Shadow=0,MarginV=20'" {output_filename_hardsub}"""
         print(subtitle_command)
         os.system(subtitle_command)
 
