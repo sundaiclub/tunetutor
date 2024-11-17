@@ -4,6 +4,10 @@ FROM python:3.11-slim
 # Set the working directory in the container
 WORKDIR /app
 
+# Install ffmpeg with libass support
+RUN apt-get update && \
+    apt-get install -y ffmpeg libass-dev
+
 # Copy the requirements file into the container
 COPY requirements.txt .
 
