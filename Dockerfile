@@ -18,4 +18,4 @@ RUN rm -rf .venv .env .DS_Store __pycache__ .git .gitignore
 EXPOSE 8080
 
 # Command to run the application
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "80", "--workers", "4"]
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8080", "--workers", "4"]
