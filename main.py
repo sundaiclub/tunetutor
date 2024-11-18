@@ -68,8 +68,14 @@ def send_email(to_email: str, subject: str, body_html: str):
     sender_password = os.getenv("SENDER_PASSWORD")
 
     if not sender_email or not sender_password:
-        print("SENDER_EMAIL or SENDER_PASSWORD is not set, email will not be sent")
-        return
+        config_path = "/tutu_files/config/config.txt"
+        if os.path.exists(config_path):
+            config = open(config_path).read().strip().splitlines()
+            sender_email = config[0].split("=")[1]
+            sender_password = config[1].split("=")[1]
+        else:
+            print("SENDER_EMAIL or SENDER_PASSWORD is not set, email will not be sent")
+            return
 
     message = MIMEMultipart()
     message["From"] = sender_email
