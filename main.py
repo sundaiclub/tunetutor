@@ -1,13 +1,15 @@
 import os
 import json
+import mimetypes
 import random
 import requests
 import time
 import uvicorn
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import (
     HTMLResponse,
     JSONResponse,
+    StreamingResponse,
 )
 from fastapi.staticfiles import StaticFiles
 from dotenv import load_dotenv
@@ -23,11 +25,37 @@ app = FastAPI()
 
 llm = ChatOpenAI(model="gpt-4o")
 
-STATIC_DIR = "/tutu_files"
-# STATIC_DIR = "static" # uncomment to run locally
+# STATIC_DIR = "/tutu_files"
+STATIC_DIR = "static"  # uncomment to run locally
 
 os.makedirs(STATIC_DIR, exist_ok=True)
 app.mount("/static", StaticFiles(directory=STATIC_DIR))
+
+
+# GCP can't serve large static files from buckets, so we stream them, TODO improve streaming or resolve GCP issue
+@app.get("/static2/{file_path:path}")
+async def stream_file(file_path: str):
+    """Stream a file as a response with appropriate content type."""
+    path = f"{STATIC_DIR}/{file_path}"
+    if not os.path.exists(path):
+        raise HTTPException(status_code=404, detail="File not found")
+
+    def iterfile():
+        with open(path, mode="rb") as file:
+            while chunk := file.read(8192):  # 8KB chunks
+                yield chunk
+
+    # Get MIME type based on file extension
+    content_type, _ = mimetypes.guess_type(file_path)
+    if not content_type:
+        content_type = "application/octet-stream"
+
+    # Get file size for Content-Length header
+    file_size = os.path.getsize(path)
+
+    headers = {"Content-Length": str(file_size), "Accept-Ranges": "bytes"}
+
+    return StreamingResponse(iterfile(), media_type=content_type, headers=headers)
 
 
 def generate_lyrics(query: str, version: int):
@@ -208,6 +236,7 @@ async def videofy(request: Request, suno_id: str, youtube_id: str = None):
     if not youtube_id:
         youtube_ids = open("youtube_ids.txt").read().strip().splitlines()
         youtube_id = random.choice(youtube_ids)
+
     video_filename = f"{STATIC_DIR}/youtube/youtube-{youtube_id}.mp4"
     if not os.path.exists(video_filename):
         ydl_opts = {
@@ -226,7 +255,7 @@ async def videofy(request: Request, suno_id: str, youtube_id: str = None):
     os.system(merge_command)
     output_filename_hardsub = f"{STATIC_DIR}/output-hardsub/{download_filename}"
 
-    if has_subtitles:
+    if has_subtitles and not os.path.exists(output_filename_hardsub):
         # TODO: combine it with merge command maybe
         # see https://superuser.com/a/869473 & https://stackoverflow.com/a/25880038 :
         # -vf "subtitles=subs.srt:force_style='Fontsize=24,PrimaryColour=&H0000ff&,OutlineColour=&H80000000'"
@@ -235,7 +264,7 @@ async def videofy(request: Request, suno_id: str, youtube_id: str = None):
         os.system(subtitle_command)
 
     result_filename = output_filename_hardsub if has_subtitles else output_filename
-    result_filename = result_filename.replace(STATIC_DIR, "static")
+    result_filename = result_filename.replace(STATIC_DIR, "static2")
 
     hostname = request.headers.get("host", "localhost:8000")
     scheme = request.headers.get("x-forwarded-proto", "http")
