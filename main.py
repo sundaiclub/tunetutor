@@ -28,8 +28,9 @@ app = FastAPI()
 
 llm = ChatOpenAI(model="gpt-4o")
 
-STATIC_DIR = "/tutu_files/static"
-# STATIC_DIR = "static"  # uncomment to run locally
+DEBUG = os.getenv("DEBUG", "False").lower() == "true"
+
+STATIC_DIR = "static" if DEBUG else "/tutu_files/static"
 
 os.makedirs(STATIC_DIR, exist_ok=True)
 app.mount("/static", StaticFiles(directory=STATIC_DIR))
@@ -90,6 +91,7 @@ def send_email(to_email: str, subject: str, body_html: str):
         server.ehlo()
         server.login(sender_email, sender_password)
         server.send_message(message)
+        print(f"Email sent to {to_email}")
 
 
 def generate_lyrics(query: str, version: int):
