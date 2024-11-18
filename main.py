@@ -22,8 +22,11 @@ app = FastAPI()
 
 llm = ChatOpenAI(model="gpt-4o")
 
-os.makedirs("static", exist_ok=True)
-app.mount("/static", StaticFiles(directory="static"), name="static")
+STATIC_DIR = "/tutu_files"
+# STATIC_DIR = "static"
+
+os.makedirs(STATIC_DIR, exist_ok=True)
+app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
 
 
 def generate_lyrics(query: str, version: int):
@@ -174,13 +177,13 @@ def repeat_subtitles(subtitles: str, audio_duration: float, times: int) -> str:
 @app.get("/api/video")
 async def videofy(request: Request, suno_id: str, youtube_id: str = None):
     print(suno_id, youtube_id)
-    os.makedirs("static/suno", exist_ok=True)
-    os.makedirs("static/youtube", exist_ok=True)
-    os.makedirs("static/output", exist_ok=True)
-    os.makedirs("static/output-hardsub", exist_ok=True)
-    os.makedirs("static/subtitles", exist_ok=True)
+    os.makedirs(f"{STATIC_DIR}/suno", exist_ok=True)
+    os.makedirs(f"{STATIC_DIR}/youtube", exist_ok=True)
+    os.makedirs(f"{STATIC_DIR}/output", exist_ok=True)
+    os.makedirs(f"{STATIC_DIR}/output-hardsub", exist_ok=True)
+    os.makedirs(f"{STATIC_DIR}/subtitles", exist_ok=True)
 
-    audio_filename = f"static/suno/suno-{suno_id}.mp3"
+    audio_filename = f"{STATIC_DIR}/suno/suno-{suno_id}.mp3"
     if not os.path.exists(audio_filename):
         audio_url = get_audio_url(suno_id)
         response = requests.get(audio_url)
@@ -188,7 +191,7 @@ async def videofy(request: Request, suno_id: str, youtube_id: str = None):
             with open(audio_filename, "wb") as file:
                 file.write(response.content)
 
-    subtitle_filename = f"static/subtitles/suno-{suno_id}-10x.srt"
+    subtitle_filename = f"{STATIC_DIR}/subtitles/suno-{suno_id}-10x.srt"
     if not os.path.exists(subtitle_filename):
         with open(subtitle_filename, "w") as file:
             subtitles = subtitle_audio(audio_filename)
@@ -203,7 +206,7 @@ async def videofy(request: Request, suno_id: str, youtube_id: str = None):
     if not youtube_id:
         youtube_ids = open("youtube_ids.txt").read().strip().splitlines()
         youtube_id = random.choice(youtube_ids)
-    video_filename = f"static/youtube/youtube-{youtube_id}.mp4"
+    video_filename = f"{STATIC_DIR}/youtube/youtube-{youtube_id}.mp4"
     if not os.path.exists(video_filename):
         ydl_opts = {
             "format": "bestvideo[ext=mp4]",
@@ -223,13 +226,12 @@ async def videofy(request: Request, suno_id: str, youtube_id: str = None):
             ydl.download(urls)
 
     download_filename = f"tutu-{suno_id}-{youtube_id}.mp4"
-    output_filename = f"static/output/{download_filename}"
+    output_filename = f"{STATIC_DIR}/output/{download_filename}"
     merge_command = f'ffmpeg -y -i "{video_filename}" -stream_loop -1 -i "{audio_filename}" -map 0:v -map 1:a -c:v copy -t $(ffprobe -i "{audio_filename}" -show_entries format=duration -v quiet -of csv="p=0") {output_filename}'
     print(merge_command)
     os.system(merge_command)
-    output_filename_hardsub = f"static/output-hardsub/{download_filename}"
+    output_filename_hardsub = f"{STATIC_DIR}/output-hardsub/{download_filename}"
 
-    # ffmpeg -y -i "static/output/tutu-71a77644-0028-450a-b32d-452c1d07bb9e-E1CgDCh5KC0.mp4" -vf "subtitles=static/subtitles/suno-71a77644-0028-450a-b32d-452c1d07bb9e.srt:force_style='Fontsize=24,PrimaryColour=&H0000ff&,OutlineColour=&H80000000'" static/output2/tutu-71a77644-0028-450a-b32d-452c1d07bb9e-E1CgDCh5KC0.mp4
     if has_subtitles:
         # TODO: combine it with merge command maybe
         # see https://superuser.com/a/869473 & https://stackoverflow.com/a/25880038 :
