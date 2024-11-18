@@ -24,10 +24,10 @@ app = FastAPI()
 llm = ChatOpenAI(model="gpt-4o")
 
 STATIC_DIR = "/tutu_files"
-# STATIC_DIR = "static"
+# STATIC_DIR = "static" # uncomment to run locally
 
 os.makedirs(STATIC_DIR, exist_ok=True)
-app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
+app.mount("/static", StaticFiles(directory=STATIC_DIR))
 
 
 def generate_lyrics(query: str, version: int):
@@ -235,9 +235,12 @@ async def videofy(request: Request, suno_id: str, youtube_id: str = None):
         os.system(subtitle_command)
 
     result_filename = output_filename_hardsub if has_subtitles else output_filename
+    result_filename = result_filename.replace(STATIC_DIR, "static")
 
     hostname = request.headers.get("host", "localhost:8000")
     scheme = request.headers.get("x-forwarded-proto", "http")
+    # FIXME: GCP can't serve large static files from buckets, max 32 MB :(
+    # use `Transfer-Encoding: chunked`, or `http2`, or something else...
     return JSONResponse(content={"url": f"{scheme}://{hostname}/{result_filename}"})
 
 
