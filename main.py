@@ -304,7 +304,7 @@ async def videofy(
         )
     # FIXME: GCP can't serve large static files from buckets, max 32 MB :(
     # use `Transfer-Encoding: chunked`, or `http2`, or something else...
-    return JSONResponse(content={"url": "url"})
+    return JSONResponse(content={"url": url})
 
 
 if __name__ == "__main__":
