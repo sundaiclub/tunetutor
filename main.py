@@ -67,6 +67,10 @@ def send_email(to_email: str, subject: str, body_html: str):
     sender_email = os.getenv("SENDER_EMAIL")
     sender_password = os.getenv("SENDER_PASSWORD")
 
+    if not sender_email or not sender_password:
+        print("SENDER_EMAIL or SENDER_PASSWORD is not set, email will not be sent")
+        return
+
     message = MIMEMultipart()
     message["From"] = sender_email
     message["To"] = to_email
