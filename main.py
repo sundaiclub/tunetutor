@@ -1,7 +1,10 @@
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
 import os
 import json
 import mimetypes
 import random
+import smtplib
 import requests
 import time
 import uvicorn
@@ -25,8 +28,8 @@ app = FastAPI()
 
 llm = ChatOpenAI(model="gpt-4o")
 
-# STATIC_DIR = "/tutu_files"
-STATIC_DIR = "static"  # uncomment to run locally
+STATIC_DIR = "/tutu_files"
+# STATIC_DIR = "static"  # uncomment to run locally
 
 os.makedirs(STATIC_DIR, exist_ok=True)
 app.mount("/static", StaticFiles(directory=STATIC_DIR))
@@ -56,6 +59,27 @@ async def stream_file(file_path: str):
     headers = {"Content-Length": str(file_size), "Accept-Ranges": "bytes"}
 
     return StreamingResponse(iterfile(), media_type=content_type, headers=headers)
+
+
+def send_email(to_email: str, subject: str, body_html: str):
+    smtp_server = "smtp.gmail.com"
+    smtp_port = 587
+    sender_email = os.getenv("SENDER_EMAIL")
+    sender_password = os.getenv("SENDER_PASSWORD")
+
+    message = MIMEMultipart()
+    message["From"] = sender_email
+    message["To"] = to_email
+    message["Subject"] = subject
+
+    message.attach(MIMEText(body_html, "html"))
+
+    with smtplib.SMTP(smtp_server, smtp_port) as server:
+        server.ehlo()
+        server.starttls()
+        server.ehlo()
+        server.login(sender_email, sender_password)
+        server.send_message(message)
 
 
 def generate_lyrics(query: str, version: int):
@@ -128,6 +152,7 @@ async def generate_music_api(request: Request, input: dict):
 @app.post("/api/generate-video", response_class=JSONResponse)
 async def generate_video_api(request: Request, input: dict):
     youtube_id = input.get("youtube_id")
+    email = input.get("email")
 
     # First generate the music by reusing generate_music_api
     music_response = await generate_music_api(request, input)
@@ -135,7 +160,7 @@ async def generate_video_api(request: Request, input: dict):
     audio2_suno_id = json.loads(music_response.body)["ids"][1]
 
     # Then create videos for each generated audio
-    video_response = await videofy(request, audio2_suno_id, youtube_id)
+    video_response = await videofy(request, audio2_suno_id, youtube_id, email)
     return video_response
 
 
@@ -204,7 +229,9 @@ def repeat_subtitles(subtitles: str, audio_duration: float, times: int) -> str:
 
 
 @app.get("/api/video")
-async def videofy(request: Request, suno_id: str, youtube_id: str = None):
+async def videofy(
+    request: Request, suno_id: str, youtube_id: str = None, email: str = None
+):
     print(suno_id, youtube_id)
     os.makedirs(f"{STATIC_DIR}/suno", exist_ok=True)
     os.makedirs(f"{STATIC_DIR}/youtube", exist_ok=True)
@@ -268,9 +295,16 @@ async def videofy(request: Request, suno_id: str, youtube_id: str = None):
 
     hostname = request.headers.get("host", "localhost:8000")
     scheme = request.headers.get("x-forwarded-proto", "http")
+    url = f"{scheme}://{hostname}/{result_filename}"
+    if email:
+        send_email(
+            email,
+            "Your TUTU video is generated!",
+            f"<a href='{url}'>Check your video out!</a>",
+        )
     # FIXME: GCP can't serve large static files from buckets, max 32 MB :(
     # use `Transfer-Encoding: chunked`, or `http2`, or something else...
-    return JSONResponse(content={"url": f"{scheme}://{hostname}/{result_filename}"})
+    return JSONResponse(content={"url": "url"})
 
 
 if __name__ == "__main__":
