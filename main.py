@@ -1,4 +1,5 @@
 import os
+import json
 import random
 import requests
 import time
@@ -102,8 +103,8 @@ async def generate_video_api(request: Request, input: dict):
 
     # First generate the music by reusing generate_music_api
     music_response = await generate_music_api(request, input)
-    # audio1_suno_id = music_response.body["ids"][0]
-    audio2_suno_id = music_response.body["ids"][0]
+    # audio1_suno_id = json.loads(music_response.body)["ids"][0]
+    audio2_suno_id = json.loads(music_response.body)["ids"][1]
 
     # Then create videos for each generated audio
     video_response = await videofy(request, audio2_suno_id, youtube_id)
@@ -186,7 +187,8 @@ async def videofy(request: Request, suno_id: str, youtube_id: str = None):
     audio_filename = f"{STATIC_DIR}/suno/suno-{suno_id}.mp3"
     if not os.path.exists(audio_filename):
         audio_url = get_audio_url(suno_id)
-        response = requests.get(audio_url)
+        response = requests.get(audio_url, stream=True)
+        response.raise_for_status()
         if response.status_code == 200:
             with open(audio_filename, "wb") as file:
                 file.write(response.content)
@@ -212,14 +214,6 @@ async def videofy(request: Request, suno_id: str, youtube_id: str = None):
             "format": "bestvideo[ext=mp4]",
             "outtmpl": video_filename,
         }
-        cookiefile_ro = (
-            "/etc/secrets/youtube_cookies.txt"  # Render secret file, read-only
-        )
-        if os.path.exists(cookiefile_ro):
-            cookiefile_rw = "youtube_cookies.txt"
-            with open(cookiefile_ro, "r") as src, open(cookiefile_rw, "w") as dst:
-                dst.write(src.read())
-            ydl_opts["cookiefile"] = cookiefile_rw
 
         with YoutubeDL(ydl_opts) as ydl:
             urls = f"https://www.youtube.com/watch?v={youtube_id}"
