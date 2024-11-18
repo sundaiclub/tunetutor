@@ -28,7 +28,7 @@ app = FastAPI()
 
 llm = ChatOpenAI(model="gpt-4o")
 
-STATIC_DIR = "/tutu_files"
+STATIC_DIR = "/tutu_files/static"
 # STATIC_DIR = "static"  # uncomment to run locally
 
 os.makedirs(STATIC_DIR, exist_ok=True)
