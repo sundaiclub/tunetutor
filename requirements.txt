@@ -9,3 +9,4 @@ yt-dlp
 ffmpeg-python
 ffmpeg
 openai-whisper
+google-cloud-storage

@@ -1,5 +1,4 @@
-from email.mime.multipart import MIMEMultipart
-from email.mime.text import MIMEText
+import datetime
 import os
 import json
 import mimetypes
@@ -8,6 +7,8 @@ import smtplib
 import requests
 import time
 import uvicorn
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import (
     HTMLResponse,
@@ -22,6 +23,20 @@ from langchain_openai import ChatOpenAI
 from yt_dlp import YoutubeDL
 from openai import OpenAI
 
+from google.cloud import storage
+
+
+def generate_signed_url(bucket_name, object_name):
+    storage_client = storage.Client()
+    bucket = storage_client.bucket(bucket_name)
+    blob = bucket.blob(object_name)
+
+    url = blob.generate_signed_url(
+        version="v4", expiration=datetime.timedelta(minutes=15), method="GET"
+    )
+    return url
+
+
 load_dotenv()
 
 app = FastAPI()
@@ -34,6 +49,12 @@ STATIC_DIR = "static" if DEBUG else "/tutu_files/static"
 
 os.makedirs(STATIC_DIR, exist_ok=True)
 app.mount("/static", StaticFiles(directory=STATIC_DIR))
+
+
+@app.get("/static3/{file_path:path}")
+def static3(file_path: str):
+    url = generate_signed_url("tutu-files", file_path)
+    return JSONResponse(content={"url": url})
 
 
 # GCP can't serve large static files from buckets, so we stream them, TODO improve streaming or resolve GCP issue
