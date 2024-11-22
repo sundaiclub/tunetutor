@@ -320,11 +320,14 @@ async def videofy(
         os.system(subtitle_command)
 
     result_filename = output_filename_hardsub if has_subtitles else output_filename
-    result_filename = result_filename.replace(STATIC_DIR, "static2")
+    result_filename = result_filename.replace(STATIC_DIR, "static")
 
-    hostname = request.headers.get("host", "localhost:8000")
-    scheme = request.headers.get("x-forwarded-proto", "http")
-    url = f"{scheme}://{hostname}/{result_filename}"
+    if DEBUG:
+        hostname = request.headers.get("host", "localhost:8000")
+        scheme = request.headers.get("x-forwarded-proto", "http")
+        url = f"{scheme}://{hostname}/{result_filename}"
+    else:
+        url = f"https://storage.googleapis.com/tutu-files/{result_filename}"
     if email:
         send_email(
             email,
