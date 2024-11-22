@@ -10,6 +10,7 @@ import uvicorn
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from fastapi import FastAPI, HTTPException, Request
+from fastapi.openapi.docs import get_swagger_ui_html
 from fastapi.responses import (
     HTMLResponse,
     JSONResponse,
@@ -136,6 +137,11 @@ def generate_brainwash(query: str, version: int):
 async def index_form():
     html_content = open("index.html").read()
     return HTMLResponse(content=html_content, status_code=200)
+
+
+@app.get("/api/docs", include_in_schema=False)
+async def get_documentation():
+    return get_swagger_ui_html(openapi_url="/openapi.json", title="docs")
 
 
 @app.post("/form-results")
